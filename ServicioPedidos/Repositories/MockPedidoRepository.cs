@@ -12,7 +12,6 @@ namespace ServicioPedidos.Repositories
 
         public async Task<Pedido> CrearPedidoAsync(Pedido pedido)
         {
-            // Simula la inserción en la base de datos asignando un ID y guardando en el diccionario
             pedido.Id = _nextId++;
             _pedidos[pedido.Id] = pedido;
             
