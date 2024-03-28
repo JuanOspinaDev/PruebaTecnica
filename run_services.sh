@@ -17,9 +17,9 @@ cd ./ServicioPedidos
 dotnet run &
 cd ..
 
-echo "Iniciando API Gateway..."
-cd ./APIGateway
-dotnet run &
+echo "Iniciando APIGateway..."
+cd ./APIGatewayGo
+go run . &
 cd ..
 
 wait
