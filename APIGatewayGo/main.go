@@ -64,33 +64,6 @@ func main() {
 				c.Data(resp.StatusCode, "application/json", body)
 			})
 
-			cuentas.POST("/create", func(c *gin.Context) {
-				bodyBytes, err := io.ReadAll(c.Request.Body)
-				if err != nil {
-					c.JSON(http.StatusBadRequest, gin.H{"error": "Error al leer el cuerpo de la solicitud"})
-					return
-				}
-				req, err := http.NewRequest("POST", "http://localhost:8082/cuentas/create", bytes.NewBuffer(bodyBytes))
-				if err != nil {
-					c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al crear la solicitud para el servicio de Cuentas por Pagar"})
-					return
-				}
-				req.Header.Set("Content-Type", "application/json")
-
-				client := &http.Client{}
-				resp, err := client.Do(req)
-				if err != nil {
-					c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Servicio de Cuentas por Pagar no disponible"})
-					return
-				}
-				defer resp.Body.Close()
-				respBody, err := io.ReadAll(resp.Body)
-				if err != nil {
-					c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al leer respuesta del servicio de Cuentas por Pagar"})
-					return
-				}
-				c.Data(resp.StatusCode, "application/json", respBody)
-			})
 		}
 
 		// Grupo de rutas para Pedidos
