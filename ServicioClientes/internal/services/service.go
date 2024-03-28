@@ -1,10 +1,13 @@
 package services
 
-import "ServicioClientes/internal/repository"
+import (
+	"ServicioClientes/internal/models"
+	"ServicioClientes/internal/repository"
+)
 
 // ClienteService define las funcionalidades para los clientes
 type ClienteService interface {
-	GetClientes() error
+	GetClientes() ([]models.Cliente, error)
 }
 
 type clienteService struct {
@@ -15,4 +18,9 @@ func NewClienteService(clienteRepo repository.ClienteRepository) *clienteService
 	return &clienteService{
 		clienteRepo:  clienteRepo,
 	}
+}
+
+// el servicio GetClientes llama al metodo de repositorio correspondiente
+func (cl *clienteService) GetClientes() ([]models.Cliente, error) {
+	return cl.clienteRepo.GetClientes()
 }
