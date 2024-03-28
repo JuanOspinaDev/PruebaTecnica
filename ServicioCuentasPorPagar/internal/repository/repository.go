@@ -15,6 +15,7 @@ var (
 type CuentaPendienteRepository interface {
 	GetCuentas() ([]models.CuentaPorPagar, error)
 	GetCuentasPorClienteID(clienteID int64) ([]models.CuentaPorPagar, error)
+	CreateCuentasPendientes(cuenta models.CuentaPorPagar) error
 }
 
 // mockCuentasPendientesRepository es una implementación de la interfaz
@@ -35,63 +36,77 @@ func NewMockCuentaPendienteRepository() CuentaPendienteRepository {
 	repo.cuentas[repo.nextID] = models.CuentaPorPagar{
 		ID:               repo.nextID,
 		ClienteID:        1,
+		PedidoID:         1001,
 		Concepto:         "Servicio de reencauche",
-		Valor:            100000,
-		FechaVencimiento: time.Now().Add(30 * 24 * time.Hour),
-	}
-	repo.nextID++
-
-	repo.cuentas[repo.nextID] = models.CuentaPorPagar{
-		ID:               repo.nextID,
-		ClienteID:        2,
-		Concepto:         "Reparación de llanta",
-		Valor:            25000,
-		FechaVencimiento: time.Now().Add(45 * 24 * time.Hour),
-	}
-	repo.nextID++
-
-	repo.cuentas[repo.nextID] = models.CuentaPorPagar{
-		ID:               repo.nextID,
-		ClienteID:        3,
-		Concepto:         "Alineación y balanceo",
-		Valor:            80000,
-		FechaVencimiento: time.Now().AddDate(0, 1, 0), // Un mes a partir de hoy
-	}
-	repo.nextID++
-
-	repo.cuentas[repo.nextID] = models.CuentaPorPagar{
-		ID:               repo.nextID,
-		ClienteID:        4,
-		Concepto:         "Cambio de aceite",
-		Valor:            150000,
-		FechaVencimiento: time.Now().AddDate(0, 2, 15), // Dos meses y quince días a partir de hoy
-	}
-	repo.nextID++
-
-	repo.cuentas[repo.nextID] = models.CuentaPorPagar{
-		ID:               repo.nextID,
-		ClienteID:        5,
-		Concepto:         "Mantenimiento preventivo",
-		Valor:            200000,
-		FechaVencimiento: time.Now().Add(7 * 24 * time.Hour), // Una semana a partir de hoy
+		NumeroDeCuota:    1,
+		Valor:            50000,
+		FechaVencimiento: time.Now().Add(30 * 24 * time.Hour).Format("2006-01-02"),
 	}
 	repo.nextID++
 
 	repo.cuentas[repo.nextID] = models.CuentaPorPagar{
 		ID:               repo.nextID,
 		ClienteID:        1,
-		Concepto:         "Cambio de llantas",
-		Valor:            300000,
-		FechaVencimiento: time.Now().AddDate(0, 0, 10), // Diez días a partir de hoy
+		PedidoID:         1001,
+		Concepto:         "Servicio de reencauche",
+		NumeroDeCuota:    2,
+		Valor:            50000,
+		FechaVencimiento: time.Now().Add(60 * 24 * time.Hour).Format("2006-01-02"),
 	}
 	repo.nextID++
 
 	repo.cuentas[repo.nextID] = models.CuentaPorPagar{
 		ID:               repo.nextID,
-		ClienteID:        2,
-		Concepto:         "Pintura de vehículo",
-		Valor:            500000,
-		FechaVencimiento: time.Now().AddDate(0, 3, 0), // Tres meses a partir de hoy
+		ClienteID:        3,
+		PedidoID:         1002,
+		Concepto:         "Alineacion y balanceo",
+		NumeroDeCuota:    1,
+		Valor:            80000,
+		FechaVencimiento: time.Now().Add(30 * 24 * time.Hour).Format("2006-01-02"),
+	}
+	repo.nextID++
+
+	repo.cuentas[repo.nextID] = models.CuentaPorPagar{
+		ID:               repo.nextID,
+		ClienteID:        1,
+		PedidoID:         1003,
+		Concepto:         "Mantenimiento Preventivo",
+		NumeroDeCuota:    1,
+		Valor:            70000,
+		FechaVencimiento: time.Now().Add(30 * 24 * time.Hour).Format("2006-01-02"),
+	}
+	repo.nextID++
+
+	repo.cuentas[repo.nextID] = models.CuentaPorPagar{
+		ID:               repo.nextID,
+		ClienteID:        1,
+		PedidoID:         1003,
+		Concepto:         "Mantenimiento Preventivo",
+		NumeroDeCuota:    2,
+		Valor:            70000,
+		FechaVencimiento: time.Now().Add(60 * 24 * time.Hour).Format("2006-01-02"),
+	}
+	repo.nextID++
+
+	repo.cuentas[repo.nextID] = models.CuentaPorPagar{
+		ID:               repo.nextID,
+		ClienteID:        1,
+		PedidoID:         1003,
+		Concepto:         "Mantenimiento Preventivo",
+		NumeroDeCuota:    3,
+		Valor:            70000,
+		FechaVencimiento: time.Now().Add(90 * 24 * time.Hour).Format("2006-01-02"),
+	}
+	repo.nextID++
+
+	repo.cuentas[repo.nextID] = models.CuentaPorPagar{
+		ID:               repo.nextID,
+		ClienteID:        4,
+		PedidoID:         1004,
+		Concepto:         "Reparación de llanta",
+		NumeroDeCuota:    1,
+		Valor:            25000,
+		FechaVencimiento: time.Now().Add(30 * 24 * time.Hour).Format("2006-01-02"),
 	}
 	repo.nextID++
 
@@ -120,4 +135,19 @@ func (r *mockCuentaPendienteRepository) GetCuentasPorClienteID(clienteID int64) 
 		}
 	}
 	return cuentas, nil
+}
+
+// CreateCuentasPendientes inserta una nueva cuenta por pagar en el repositorio
+func (r *mockCuentaPendienteRepository) CreateCuentasPendientes(cuenta models.CuentaPorPagar) error {
+	r.Lock()
+	defer r.Unlock()
+
+	// Asignar un nuevo ID a la cuenta
+	cuenta.ID = r.nextID
+	r.nextID++
+
+	// Insertar la cuenta en el mapa
+	r.cuentas[cuenta.ID] = cuenta
+
+	return nil
 }

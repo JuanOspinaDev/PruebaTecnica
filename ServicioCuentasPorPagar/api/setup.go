@@ -9,12 +9,11 @@ import (
 )
 
 // SetupRouter configura y retorna las rutas para el servicio CuentasPorPagar.
-func SetUpRouter() *gin.Engine {
+func SetupRouter(repo repository.CuentaPendienteRepository) *gin.Engine {
 	router := gin.Default()
 
 	// Se realiza la inyeccion de dependencias
-	cuentaPendienteRepo := repository.NewMockCuentaPendienteRepository()
-	cuentaPendienteService := services.NewClienteService(cuentaPendienteRepo)
+	cuentaPendienteService := services.NewCuentaPendienteService(repo)
 	cuentaPendienteHandler := handlers.NewClienteHandler(cuentaPendienteService)
 
 	// Se establece el grupo de ruta clientes
